@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>報修表單</title>
+</head>
+<body>
+    <h1>報修表單</h1>
+    <form id="form">
+        <input type="text" id="location" placeholder="位置"><br>
+        <input type="text" id="equipment" placeholder="設備"><br>
+        <select id="category">
+            <option value="電氣">電氣</option>
+            <option value="機械">機械</option>
+        </select><br>
+        <select id="priority">
+            <option value="緊急">緊急</option>
+            <option value="一般">一般</option>
+            <option value="低">低</option>
+        </select><br>
+        <textarea id="description" placeholder="描述"></textarea><br>
+        <input type="text" id="reporter" placeholder="報修人"><br>
+        <input type="text" id="contact" placeholder="聯絡方式"><br>
+        <button type="submit">送出</button>
+    </form>
+    <script>
+        document.getElementById("form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const data = {
+                location: document.getElementById("location").value,
+                equipment: document.getElementById("equipment").value,
+                category: document.getElementById("category").value,
+                priority: document.getElementById("priority").value,
+                description: document.getElementById("description").value,
+                reporter: document.getElementById("reporter").value,
+                contact: document.getElementById("contact").value,
+                timestamp: new Date().toLocaleString()
+            };
+            fetch("/submit", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(res => alert(res.status === "success" ? "送出成功" : "送出失敗：" + res.message));
+        });
+    </script>
+</body>
+</html>
