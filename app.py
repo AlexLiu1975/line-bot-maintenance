@@ -32,8 +32,18 @@ def webhook():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
-    user_text = event.message.text
-    reply_text = f"你說的是：{user_text}"
+    source_type = event.source.type
+    print("來源類型:", source_type)
+
+    if source_type == 'group':
+        group_id = event.source.group_id
+        print("群組 ID:", group_id)
+        reply_text = f"群組 ID 是：{group_id}"
+    elif source_type == 'user':
+        reply_text = f"你說的是：{event.message.text}"
+    else:
+        reply_text = "尚未支援的來源類型"
+
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
 @app.route("/submit", methods=['POST'])
