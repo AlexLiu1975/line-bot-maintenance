@@ -1,49 +1,569 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>報修表單</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設備故障報修系統</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            background: white;
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .content {
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .priority-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .priority-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .priority-btn.high {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        .priority-btn.medium {
+            border-color: #f39c12;
+            color: #f39c12;
+        }
+
+        .priority-btn.low {
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+
+        .priority-btn.selected {
+            color: white;
+        }
+
+        .priority-btn.high.selected {
+            background: #e74c3c;
+        }
+
+        .priority-btn.medium.selected {
+            background: #f39c12;
+        }
+
+        .priority-btn.low.selected {
+            background: #27ae60;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qr-section {
+            text-align: center;
+        }
+
+        .qr-generator {
+            margin: 20px 0;
+        }
+
+        .qr-canvas {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .qr-url {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: monospace;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .priority-buttons {
+                flex-direction: column;
+            }
+            
+            .priority-btn {
+                min-width: auto;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>報修表單</h1>
-    <form id="form">
-        <input type="text" id="location" placeholder="位置"><br>
-        <input type="text" id="equipment" placeholder="設備"><br>
-        <select id="category">
-            <option value="電氣">電氣</option>
-            <option value="機械">機械</option>
-        </select><br>
-        <select id="priority">
-            <option value="緊急">緊急</option>
-            <option value="一般">一般</option>
-            <option value="低">低</option>
-        </select><br>
-        <textarea id="description" placeholder="描述"></textarea><br>
-        <input type="text" id="reporter" placeholder="報修人"><br>
-        <input type="text" id="contact" placeholder="聯絡方式"><br>
-        <button type="submit">送出</button>
-    </form>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 設備故障報修系統</h1>
+            <p>透過QR Code快速報修設備故障</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('report')">故障報修</div>
+            <div class="tab" onclick="switchTab('qr')">生成QR Code</div>
+        </div>
+
+        <div class="content">
+            <!-- 故障報修表單 -->
+            <div id="reportTab">
+                <form id="maintenanceForm">
+                    <div class="form-group">
+                        <label for="location">設備位置 *</label>
+                        <input type="text" id="location" name="location" required 
+                               placeholder="例如：1樓大廳空調設備">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equipment">設備名稱 *</label>
+                        <input type="text" id="equipment" name="equipment" required 
+                               placeholder="例如：中央空調主機">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">故障類別 *</label>
+                        <select id="category" name="category" required>
+                            <option value="">請選擇故障類別</option>
+                            <option value="電氣">電氣故障</option>
+                            <option value="機械">機械故障</option>
+                            <option value="水電">水電故障</option>
+                            <option value="空調">空調故障</option>
+                            <option value="消防">消防設備</option>
+                            <option value="電梯">電梯故障</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>緊急程度 *</label>
+                        <div class="priority-buttons">
+                            <div class="priority-btn high" data-priority="緊急">
+                                🚨 緊急<br><small>立即處理</small>
+                            </div>
+                            <div class="priority-btn medium" data-priority="一般">
+                                ⚠️ 一般<br><small>24小時內</small>
+                            </div>
+                            <div class="priority-btn low" data-priority="低">
+                                📝 低<br><small>3天內</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">故障描述 *</label>
+                        <textarea id="description" name="description" required 
+                                  placeholder="請詳細描述故障情況，包括故障現象、發生時間等..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reporter">報修人員</label>
+                        <input type="text" id="reporter" name="reporter" 
+                               placeholder="請輸入報修人姓名">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact">聯絡方式</label>
+                        <input type="text" id="contact" name="contact" 
+                               placeholder="電話或分機號碼">
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        📨 提交報修需求
+                    </button>
+                </form>
+
+                <div id="submitMessage" class="hidden"></div>
+            </div>
+
+            <!-- QR Code生成 -->
+            <div id="qrTab" class="hidden">
+                <div class="qr-section">
+                    <h3>🎯 生成設備QR Code</h3>
+                    <p>為每個設備生成專屬的QR Code，方便快速報修</p>
+
+                    <div class="qr-generator">
+                        <div class="form-group">
+                            <label for="qrLocation">設備位置</label>
+                            <input type="text" id="qrLocation" 
+                                   placeholder="例如：2樓會議室A">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qrEquipment">設備名稱</label>
+                            <input type="text" id="qrEquipment" 
+                                   placeholder="例如：投影機">
+                        </div>
+
+                        <button type="button" onclick="generateQR()" class="submit-btn">
+                            🔄 生成QR Code
+                        </button>
+                    </div>
+
+                    <div id="qrResult" class="hidden">
+                        <div class="qr-canvas" id="qrCanvas"></div>
+                        <div class="qr-url">
+                            <strong>QR Code連結：</strong><br>
+                            <span id="qrUrl"></span>
+                        </div>
+                        <p><small>將此QR Code貼在設備旁，掃描即可快速報修</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        document.getElementById("form").addEventListener("submit", function(e) {
-            e.preventDefault();
-            const data = {
-                location: document.getElementById("location").value,
-                equipment: document.getElementById("equipment").value,
-                category: document.getElementById("category").value,
-                priority: document.getElementById("priority").value,
-                description: document.getElementById("description").value,
-                reporter: document.getElementById("reporter").value,
-                contact: document.getElementById("contact").value,
-                timestamp: new Date().toLocaleString()
-            };
-            fetch("/submit", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json())
-            .then(res => alert(res.status === "success" ? "送出成功" : "送出失敗：" + res.message));
+        let selectedPriority = '';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 從URL參數預填表單
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('location')) {
+                document.getElementById('location').value = decodeURIComponent(urlParams.get('location'));
+            }
+            if (urlParams.get('equipment')) {
+                document.getElementById('equipment').value = decodeURIComponent(urlParams.get('equipment'));
+            }
+
+            // 優先級按鈕事件
+            document.querySelectorAll('.priority-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedPriority = this.dataset.priority;
+                });
+            });
+
+            // 表單提交
+            document.getElementById('maintenanceForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitMaintenanceRequest();
+            });
         });
+
+        // 切換標籤
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('[id$="Tab"]').forEach(content => content.classList.add('hidden'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+        }
+
+        // 提交維修需求
+        async function submitMaintenanceRequest() {
+            const formData = {
+                location: document.getElementById('location').value,
+                equipment: document.getElementById('equipment').value,
+                category: document.getElementById('category').value,
+                priority: selectedPriority,
+                description: document.getElementById('description').value,
+                reporter: document.getElementById('reporter').value,
+                contact: document.getElementById('contact').value,
+                timestamp: new Date().toLocaleString('zh-TW')
+            };
+
+            // 驗證必填欄位
+            if (!formData.location || !formData.equipment || !formData.category || 
+                !formData.priority || !formData.description) {
+                showMessage('請填寫所有必填欄位！', 'error');
+                return;
+            }
+
+            // 顯示提交中狀態
+            const submitBtn = document.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '📤 提交中...';
+            submitBtn.disabled = true;
+
+            try {
+                // 發送到LINE群組
+                await sendToLineGroup(formData);
+                
+                showMessage('報修需求已成功提交至LINE群組！維修人員將盡快處理。', 'success');
+                
+                // 清空表單
+                document.getElementById('maintenanceForm').reset();
+                document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('selected'));
+                selectedPriority = '';
+                
+            } catch (error) {
+                console.error('提交失敗：', error);
+                showMessage('提交失敗，請稍後再試或聯繫系統管理員。', 'error');
+            } finally {
+                // 恢復按鈕狀態
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // 發送到LINE群組的函數
+        async function sendToLineGroup(formData) {
+            const lineMessage = formatLineMessage(formData);
+            
+            // ==================== Render + Flask API 設定 ====================
+            const RENDER_API_CONFIG = {
+                // 請將下面的 URL 替換為您的 Render 應用程式 URL
+                API_URL: 'https://line-bot-maintenance.onrender.com/api/send-line-message',
+                
+                // 如果在本地測試，使用這個 URL
+                // API_URL: 'http://localhost:5000/api/send-line-message',
+            };
+            
+            // 部署步驟：
+            // 1. 建立 GitHub Repository
+            // 2. 部署 Flask 後端到 Render
+            // 3. 設定環境變數 (LINE_CHANNEL_ACCESS_TOKEN, LINE_GROUP_ID)
+            // 4. 將上面的 URL 替換為實際的 Render URL
+            // =====================================================================
+
+            const response = await fetch(RENDER_API_CONFIG.API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: lineMessage,
+                    formData: formData
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Render API 錯誤：', errorData);
+                
+                // 提供更詳細的錯誤訊息
+                let errorMessage = '發送失敗';
+                if (response.status === 404) {
+                    errorMessage = 'API 端點不存在，請檢查 Render 部署狀態';
+                } else if (response.status === 500) {
+                    errorMessage = '伺服器錯誤，請檢查 LINE Bot 設定';
+                } else if (response.status === 503) {
+                    errorMessage = 'LINE API 連接失敗，請稍後再試';
+                } else {
+                    errorMessage = errorData.message || `HTTP ${response.status} 錯誤`;
+                }
+                
+                throw new Error(errorMessage);
+            }
+            
+            return response.json();
+        }
+
+        // 格式化LINE訊息
+        function formatLineMessage(data) {
+            const priorityEmoji = {
+                '緊急': '🚨',
+                '一般': '⚠️',
+                '低': '📝'
+            };
+
+            return `${priorityEmoji[data.priority]} 設備故障報修
+            
+📍 位置：${data.location}
+⚙️ 設備：${data.equipment}
+🔧 類別：${data.category}
+⏰ 緊急程度：${data.priority}
+📝 故障描述：${data.description}
+👤 報修人：${data.reporter || '未提供'}
+📞 聯絡方式：${data.contact || '未提供'}
+🕐 報修時間：${data.timestamp}
+
+請維修人員盡快處理！`;
+        }
+
+        // 生成QR Code
+        function generateQR() {
+            const location = document.getElementById('qrLocation').value;
+            const equipment = document.getElementById('qrEquipment').value;
+
+            if (!location || !equipment) {
+                alert('請填寫設備位置和名稱');
+                return;
+            }
+
+            // 生成包含預填資訊的URL
+            const baseUrl = window.location.origin + window.location.pathname;
+            const qrUrl = `${baseUrl}?location=${encodeURIComponent(location)}&equipment=${encodeURIComponent(equipment)}`;
+
+            // 清空之前的QR Code
+            document.getElementById('qrCanvas').innerHTML = '';
+
+            // 生成新的QR Code
+            const qr = new QRious({
+                element: document.createElement('canvas'),
+                value: qrUrl,
+                size: 200,
+                level: 'M'
+            });
+
+            document.getElementById('qrCanvas').appendChild(qr.canvas);
+            document.getElementById('qrUrl').textContent = qrUrl;
+            document.getElementById('qrResult').classList.remove('hidden');
+        }
+
+        // 顯示訊息
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('submitMessage');
+            messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            messageDiv.textContent = message;
+            messageDiv.classList.remove('hidden');
+
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 5000);
+        }
     </script>
 </body>
 </html>
