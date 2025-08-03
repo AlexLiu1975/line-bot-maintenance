@@ -76,7 +76,7 @@ def webhook():
 
 # 整理 LINE 訊息格式
 def format_line_message(data):
-    icon = {"緊急": "🚨", "一般": "⚠️", "低": "📝"}.get(data["priority"], "📌")
+    icon = {"緊急": "🚨", "一般": "⚠️", "低": "📝"}.get(data.get["priority"], "📌")
     return f"""{icon} 設備故障報修
 
 📍 位置：{data['location']}
