@@ -31,13 +31,13 @@ def submit():
 
 # 發送訊息到 LINE 群組
 def send_line_message(msg):
-    token = os.getenv("b//atJcbyZqDabX2cfE0aoKzmJDm1ljckW1HfwqbsX6wJZN+FBXgMqAoDPmT2rj5xL7AXs5zbcfx3p0aW8MEmUs7sezQMsLaNooSyTknCCiDrRbJk3lu76jYWNwAk/BYfXiYlnvqijfNb6BR1pNO5QdB04t89/1O/w1cDnyilFU=")
+    token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
 
-    to = os.getenv("U13ec8729a0ec07db338b59b731fc0cd9")
+    to = os.getenv("LINE_GROUP_ID")
     body = {
         "to": to,
         "messages": [{
@@ -76,7 +76,8 @@ def webhook():
 
 # 整理 LINE 訊息格式
 def format_line_message(data):
-    icon = {"緊急": "🚨", "一般": "⚠️", "低": "📝"}.get(data.get["priority"], "📌")
+    icon = {"緊急": "🚨", "一般": "⚠️", "低": "📝"}.get(data.get("priority"), "📌")
+
     return f"""{icon} 設備故障報修
 
 📍 位置：{data['location']}
