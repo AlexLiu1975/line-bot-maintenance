@@ -1,95 +1,42 @@
-from flask import Flask, request, render_template, jsonify
-from datetime import datetime
+from flask import Flask, request, abort
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import os
-import requests
-
-from dotenv import load_dotenv
-load_dotenv()
 
 app = Flask(__name__)
 
-# 前端報修表單頁面
+# 替換成你自己的
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get('LINE_CHANNEL_ACCESS_TOKENb//atJcbyZqDabX2cfE0aoKzmJDm1ljckW1HfwqbsX6wJZN+FBXgMqAoDPmT2rj5xL7AXs5zbcfx3p0aW8MEmUs7sezQMsLaNooSyTknCCiDrRbJk3lu76jYWNwAk/BYfXiYlnvqijfNb6BR1pNO5QdB04t89/1O/w1cDnyilFU=')
+LINE_CHANNEL_SECRET = os.environ.get('0c0a7f823acdc24d4c3a3c78e2bf09bb')
+
+line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+handler = WebhookHandler(LINE_CHANNEL_SECRET)
+
 @app.route("/", methods=["GET"])
-def index():
-    location = request.args.get("location", "")
-    equipment = request.args.get("equipment", "")
-    return render_template("index.html", location=location, equipment=equipment)
+def health_check():
+    return "Flask app is running!"
 
-# 處理報修表單 POST
-@app.route("/submit", methods=["POST"])
-def submit():
-    data = request.get_json()
-    if not data:
-        return jsonify({"status": "error", "message": "資料錯誤"})
-
-    msg = format_line_message(data)
-    success = send_line_message(msg)
-    if success:
-        return jsonify({"status": "success"})
-    else:
-        return jsonify({"status": "error", "message": "發送到 LINE 失敗"})
-
-# 發送訊息到 LINE 群組
-def send_line_message(msg):
-    token = os.getenv("b//atJcbyZqDabX2cfE0aoKzmJDm1ljckW1HfwqbsX6wJZN+FBXgMqAoDPmT2rj5xL7AXs5zbcfx3p0aW8MEmUs7sezQMsLaNooSyTknCCiDrRbJk3lu76jYWNwAk/BYfXiYlnvqijfNb6BR1pNO5QdB04t89/1O/w1cDnyilFU=")
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
-
-    to = os.getenv("LINE_GROUP_ID")
-    body = {
-        "to": to,
-        "messages": [{
-            "type": "text",
-            "text": msg
-        }]
-    }
-
-    res = requests.post("https://api.line.me/v2/bot/message/push", headers=headers, json=body)
-    return res.status_code == 200
-
-# 處理 LINE Webhook 事件
 @app.route("/webhook", methods=["POST"])
-def webhook():
-    body = request.get_json()
-    print("📩 收到 Webhook：", body)
+def callback():
+    signature = request.headers["X-Line-Signature"]
+    body = request.get_data(as_text=True)
 
     try:
-        events = body.get("events", [])
-        for event in events:
-            source = event.get("source", {})
-            print("🔍 Source:", source)
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        abort(400)
 
-            if source.get("type") == "group":
-                group_id = source.get("groupId")
-                print("✅ 群組 ID：", group_id)
+    return "OK"
 
-            elif source.get("type") == "user":
-                print("👤 這是個人訊息，不是群組")
-
-    except Exception as e:
-        print("Webhook 錯誤：", e)
-
-    return "OK", 200
-
-
-# 整理 LINE 訊息格式
-def format_line_message(data):
-    icon = {"緊急": "🚨", "一般": "⚠️", "低": "📝"}.get(data.get("priority"), "📌")
-
-    return f"""{icon} 設備故障報修
-
-📍 位置：{data['location']}
-⚙️ 設備：{data['equipment']}
-🔧 類別：{data['category']}
-⏰ 緊急程度：{data['priority']}
-📝 故障描述：{data['description']}
-👤 報修人：{data.get('reporter', '未提供')}
-📞 聯絡方式：{data.get('contact', '未提供')}
-🕐 時間：{data['timestamp']}"""
+@handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    user_msg = event.message.text
+    reply = f"你說的是：{user_msg}"
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=reply)
+    )
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Render 會提供 PORT 環境變數
-    app.run(host="0.0.0.0", port=port)
-
+    app.run()
