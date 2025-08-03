@@ -11,8 +11,8 @@ LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("b//atJcbyZqDabX2cfE0aoKzmJDm1ljckW1H
 LINE_CHANNEL_SECRET = os.environ.get("0c0a7f823acdc24d4c3a3c78e2bf09bb")
 LINE_GROUP_ID = os.environ.get("2007868235")  # 群組 ID 或使用者 ID
 
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
-handler = WebhookHandler(LINE_CHANNEL_SECRET)
+line_bot_api = LineBotApi("b//atJcbyZqDabX2cfE0aoKzmJDm1ljckW1HfwqbsX6wJZN+FBXgMqAoDPmT2rj5xL7AXs5zbcfx3p0aW8MEmUs7sezQMsLaNooSyTknCCiDrRbJk3lu76jYWNwAk/BYfXiYlnvqijfNb6BR1pNO5QdB04t89/1O/w1cDnyilFU=")
+handler = WebhookHandler("0c0a7f823acdc24d4c3a3c78e2bf09bb")
 
 @app.route("/")
 def index():
