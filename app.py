@@ -31,7 +31,7 @@ def submit():
 
 # 發送訊息到 LINE 群組
 def send_line_message(msg):
-    token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
+    token = os.getenv("b//atJcbyZqDabX2cfE0aoKzmJDm1ljckW1HfwqbsX6wJZN+FBXgMqAoDPmT2rj5xL7AXs5zbcfx3p0aW8MEmUs7sezQMsLaNooSyTknCCiDrRbJk3lu76jYWNwAk/BYfXiYlnvqijfNb6BR1pNO5QdB04t89/1O/w1cDnyilFU=")
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
