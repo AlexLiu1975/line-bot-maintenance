@@ -48,20 +48,29 @@ def send_line_message(msg):
 
     res = requests.post("https://api.line.me/v2/bot/message/push", headers=headers, json=body)
     return res.status_code == 200
+
 # 處理 LINE Webhook 事件
 @app.route("/webhook", methods=["POST"])
 def webhook():
     body = request.get_json()
     print("📩 收到 Webhook：", body)
+
     try:
         events = body.get("events", [])
         for event in events:
             source = event.get("source", {})
+            print("🔍 Source:", source)
+
             if source.get("type") == "group":
                 group_id = source.get("groupId")
                 print("✅ 群組 ID：", group_id)
+
+            elif source.get("type") == "user":
+                print("👤 這是個人訊息，不是群組")
+
     except Exception as e:
         print("Webhook 錯誤：", e)
+
     return "OK", 200
 
 
